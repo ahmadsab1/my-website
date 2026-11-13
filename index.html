@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ahmad Sabbah | Flutter Developer & Video Editor</title>
+<meta name="description" content="Ahmad Sabbah — Flutter developer building clean, fast mobile apps for Android and iOS, plus professional video editing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07090e; --bg2:#10141d; --card:rgba(20,25,36,.62); --line:rgba(255,255,255,.08);
+    --text:#e9ecf2; --muted:#9aa3b5; --accent:#4f8cff; --accent2:#22d3a6;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+  body.ar{font-family:'Cairo',sans-serif}
+  body.ar .en, body:not(.ar) .ar{display:none}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1150px;margin:0 auto;padding:0 24px}
+  main{position:relative;z-index:1}
+
+  /* Full-page 3D background */
+  #scene{position:fixed;inset:0;z-index:0;pointer-events:none}
+  #scene canvas{display:block;width:100%!important;height:100%!important}
+  .vignette{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 40%,rgba(7,9,14,.85) 100%)}
+
+  /* Cursor glow */
+  .glow{position:fixed;width:420px;height:420px;border-radius:50%;pointer-events:none;z-index:0;
+    background:radial-gradient(circle,rgba(79,140,255,.16),transparent 60%);transform:translate(-50%,-50%);left:-500px;top:-500px}
+  @media (hover:none){.glow{display:none}}
+
+  /* Scroll progress */
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:20;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+
+  /* Nav */
+  nav{position:sticky;top:0;z-index:10;background:rgba(7,9,14,.55);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-.5px}
+  .logo span{color:var(--accent)}
+  .links{display:flex;gap:28px;align-items:center}
+  .links a{color:var(--muted);font-size:15px;transition:color .2s}
+  .links a:hover{color:var(--text)}
+  .lang{border:1px solid var(--line);background:var(--card);color:var(--text);padding:6px 14px;border-radius:999px;cursor:pointer;font:inherit;font-size:14px}
+  @media(max-width:720px){.links a{display:none}}
+
+  /* Hero */
+  .hero{min-height:calc(100vh - 64px);display:flex;align-items:center;padding:40px 0;perspective:1200px}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:20px;width:100%}
+  .hero-text{perspective:1000px}
+  .hero-space{height:520px}
+  @media(max-width:900px){
+    .hero{align-items:flex-end}
+    .hero-grid{grid-template-columns:1fr}
+    .hero-space{height:300px;order:-1}
+  }
+  .tag{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;color:var(--accent2);font-size:14px;margin-bottom:22px;background:var(--card);backdrop-filter:blur(10px)}
+  h1{font-size:clamp(38px,5.6vw,66px);line-height:1.08;font-weight:800;letter-spacing:-1.5px}
+  body.ar h1{letter-spacing:0;line-height:1.35}
+  h1 .grad{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--muted);font-size:19px;max-width:600px;margin:22px 0 36px}
+  .btns{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{padding:14px 26px;border-radius:12px;font-weight:600;font-size:16px;transition:transform .15s,box-shadow .2s}
+  .btn:hover{transform:translateY(-3px)}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 8px 30px rgba(79,140,255,.35)}
+  .btn.primary:hover{box-shadow:0 14px 44px rgba(79,140,255,.55)}
+  .btn.ghost{border:1px solid var(--line);background:var(--card);backdrop-filter:blur(10px)}
+  .scroll-hint{margin-top:46px;color:var(--muted);font-size:13px;display:flex;align-items:center;gap:10px}
+  .mouse{width:22px;height:34px;border:2px solid var(--muted);border-radius:12px;position:relative}
+  .mouse::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;border-radius:2px;background:var(--muted);transform:translateX(-50%);animation:wheel 1.6s infinite}
+  @keyframes wheel{0%{opacity:1;top:6px}100%{opacity:0;top:18px}}
+
+  /* 3D skills band */
+  .band-wrap{perspective:900px;padding:30px 0;overflow:hidden}
+  .band{transform:rotateX(18deg) rotateZ(-3deg);background:linear-gradient(90deg,var(--accent),var(--accent2));
+    padding:16px 0;white-space:nowrap;direction:ltr;box-shadow:0 30px 60px rgba(79,140,255,.25)}
+  .band-track{display:inline-block;animation:marquee 28s linear infinite;font-weight:800;font-size:22px;color:#06101f}
+  .band-track span{margin:0 26px}
+  @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* Sections */
+  section{padding:110px 0}
+  .sec-head{margin-bottom:48px;perspective:800px}
+  .sec-head small{color:var(--accent);font-weight:600;letter-spacing:2px;text-transform:uppercase;font-size:13px;display:block}
+  body.ar .sec-head small{letter-spacing:0}
+  .sec-head h2{font-size:clamp(30px,4.4vw,46px);font-weight:800;margin-top:6px;display:inline-block}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;perspective:1200px}
+  .half{max-width:620px}
+  body:not(.ar) .right, body.ar .left{margin-inline-start:auto}
+
+  /* Glass 3D cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;position:relative;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transform-style:preserve-3d;transition:transform .2s ease-out,border-color .2s,box-shadow .2s;will-change:transform}
+  .card:hover{border-color:rgba(79,140,255,.35);box-shadow:0 25px 60px rgba(0,0,0,.5),0 0 40px rgba(79,140,255,.12)}
+  .card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .2s;
+    background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.1),transparent 45%)}
+  .card:hover::after{opacity:1}
+  .card > *{transform:translateZ(35px)}
+  .icon{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:18px}
+  .card h3{font-size:20px;margin-bottom:10px}
+  .card p{color:var(--muted);font-size:15.5px}
+  .card ul{margin-top:14px;list-style:none;color:var(--muted);font-size:15px}
+  .card li{padding:3px 0}
+  .card li::before{content:"✓ ";color:var(--accent2)}
+
+  /* Projects */
+  .thumb{height:190px;border-radius:12px;margin-bottom:20px;display:grid;place-items:center;font-size:56px;border:1px solid var(--line);overflow:hidden;position:relative;transform:translateZ(55px)!important}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .thumb::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.35))}
+  .t1{background:linear-gradient(135deg,#1e3a8a,#0f766e)}
+  .t2{background:linear-gradient(135deg,#7c2d12,#a21caf)}
+  .t3{background:linear-gradient(135deg,#334155,#1d4ed8)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip{font-size:12.5px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted)}
+  .more{display:inline-block;margin-top:16px;color:var(--accent);font-weight:600;font-size:15px}
+
+  /* Steps */
+  .steps{counter-reset:s}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;inset-inline-start:28px;top:28px;width:38px;height:38px;border-radius:50%;
+    display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transform:translateZ(50px);
+    box-shadow:0 8px 24px rgba(79,140,255,.4)}
+  .step h3,.step p{margin-inline-start:54px}
+
+  /* Contact */
+  .contact{text-align:center;min-height:80vh;display:flex;align-items:center}
+  .contact .wrap{width:100%}
+  .contact .lead{margin-inline:auto}
+  .contact .btns{justify-content:center}
+  .email-line{margin-top:26px;color:var(--muted);font-size:15px}
+  .copy{font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin-inline-start:8px;cursor:pointer;direction:ltr}
+  .copy:hover{border-color:rgba(79,140,255,.5)}
+  .copy-ic{color:var(--accent);margin-inline-start:4px}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translate(-50%,20px);opacity:0;z-index:30;pointer-events:none;
+    background:var(--accent2);color:#06101f;font-weight:700;padding:10px 20px;border-radius:999px;transition:opacity .25s,transform .25s}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:14px;text-align:center;background:rgba(7,9,14,.6)}
+
+  @media (prefers-reduced-motion: reduce){ .band-track,.mouse::after{animation:none} }
+</style>
+<!-- Animation library -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+<div id="scene" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="glow" id="glow" aria-hidden="true"></div>
+<div class="progress" id="progress"></div>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="logo">Ahmad<span>.</span></a>
+    <div class="links">
+      <a href="#services"><span class="en">Services</span><span class="ar">خدماتي</span></a>
+      <a href="#work"><span class="en">Work</span><span class="ar">أعمالي</span></a>
+      <a href="#process"><span class="en">Process</span><span class="ar">طريقة العمل</span></a>
+      <a href="#contact"><span class="en">Contact</span><span class="ar">تواصل</span></a>
+      <button class="lang" id="langBtn">العربية</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+<!-- HERO -->
+<header class="hero" data-stage>
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <div class="tag h-anim"><span class="en">● Available for new projects</span><span class="ar">● متاح لمشاريع جديدة</span></div>
+      <h1 class="h-anim">
+        <span class="en">I build <span class="grad">mobile apps</span> people enjoy using.</span>
+        <span class="ar">أبني <span class="grad">تطبيقات موبايل</span> يستمتع الناس باستخدامها.</span>
+      </h1>
+      <p class="lead h-anim">
+        <span class="en">I'm Ahmad Sabbah, a Flutter developer and Computer Science graduate. I turn ideas and designs into clean, fast apps for Android and iOS — and I edit videos that make products look their best.</span>
+        <span class="ar">أنا أحمد صباح، مطور Flutter وخريج علوم حاسب. أحوّل الأفكار والتصاميم إلى تطبيقات سريعة ومنظمة لأندرويد وآيفون، وأقدّم مونتاج فيديو احترافي يُظهر المنتجات بأفضل صورة.</span>
+      </p>
+      <div class="btns h-anim">
+        <a href="#contact" class="btn primary"><span class="en">Start a project</span><span class="ar">ابدأ مشروعك</span></a>
+        <a href="#work" class="btn ghost"><span class="en">See my work</span><span class="ar">شاهد أعمالي</span></a>
+      </div>
+      <div class="scroll-hint h-anim"><div class="mouse"></div><span class="en">Scroll to explore</span><span class="ar">مرّر للاستكشاف</span></div>
+    </div>
+    <div class="hero-space"></div>
+  </div>
+</header>
+
+<!-- 3D SKILLS BAND -->
+<div class="band-wrap" aria-hidden="true">
+  <div class="band"><div class="band-track">
+    <span>Flutter</span><span>✦</span><span>Dart</span><span>✦</span><span>Cubit / Bloc</span><span>✦</span><span>REST APIs</span><span>✦</span><span>Figma to Code</span><span>✦</span><span>Video Editing</span><span>✦</span><span>Python</span><span>✦</span><span>Security</span><span>✦</span>
+    <span>Flutter</span><span>✦</span><span>Dart</span><span>✦</span><span>Cubit / Bloc</span><span>✦</span><span>REST APIs</span><span>✦</span><span>Figma to Code</span><span>✦</span><span>Video Editing</span><span>✦</span><span>Python</span><span>✦</span><span>Security</span><span>✦</span>
+  </div></div>
+</div>
+
+<!-- SERVICES -->
+<section id="services" data-stage>
+  <div class="wrap">
+    <div class="sec-head">
+      <small><span class="en">What I do</span><span class="ar">ماذا أقدّم</span></small>
+      <h2><span class="en">Services</span><span class="ar">الخدمات</span></h2>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">📱</div>
+        <h3><span class="en">Flutter App Development</span><span class="ar">تطوير تطبيقات Flutter</span></h3>
+        <p><span class="en">Cross-platform apps for Android and iOS, built with clean architecture so they're easy to grow.</span><span class="ar">تطبيقات لأندرويد وآيفون بكود منظم وسهل التطوير مستقبلاً.</span></p>
+        <ul>
+          <li><span class="en">Figma to Flutter, pixel-perfect</span><span class="ar">تحويل تصاميم Figma بدقة</span></li>
+          <li><span class="en">Bloc / Cubit state management</span><span class="ar">إدارة الحالة بـ Bloc / Cubit</span></li>
+          <li><span class="en">Bug fixes & improvements</span><span class="ar">إصلاح الأخطاء والتحسينات</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="icon">🎬</div>
+        <h3><span class="en">Video Editing</span><span class="ar">مونتاج الفيديو</span></h3>
+        <p><span class="en">Professional edits for social media, product demos and app showcase videos.</span><span class="ar">مونتاج احترافي للسوشيال ميديا وعروض المنتجات وفيديوهات استعراض التطبيقات.</span></p>
+        <ul>
+          <li><span class="en">App & product demo videos</span><span class="ar">فيديوهات عرض التطبيقات والمنتجات</span></li>
+          <li><span class="en">Reels & short-form content</span><span class="ar">ريلز ومحتوى قصير</span></li>
+          <li><span class="en">Clean cuts, music & captions</span><span class="ar">قص احترافي وموسيقى وترجمة</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="icon">🛡️</div>
+        <h3><span class="en">Security-Minded Code</span><span class="ar">كود يراعي الأمان</span></h3>
+        <p><span class="en">With a background in offensive security, I protect what many developers overlook — like keeping API keys and sensitive data out of your app.</span><span class="ar">بخلفية في الأمن السيبراني، أحمي ما يغفل عنه كثير من المطورين، مثل إبعاد مفاتيح الـ API والبيانات الحساسة عن التطبيق.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section id="work" data-stage>
+  <div class="wrap">
+    <div class="sec-head">
+      <small><span class="en">Selected projects</span><span class="ar">مشاريع مختارة</span></small>
+      <h2><span class="en">My Work</span><span class="ar">أعمالي</span></h2>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <!-- To use a screenshot: replace the emoji with <img src="levelup.png" alt="Level Up"> -->
+        <div class="thumb t1">🏆</div>
+        <h3>Level Up</h3>
+        <p><span class="en">A gamified daily-progress tracker: complete tasks, earn XP and level up your day.</span><span class="ar">تطبيق لمتابعة التقدم اليومي بأسلوب الألعاب: أنجز مهامك واكسب نقاط وارتقِ بالمستويات.</span></p>
+        <div class="chips"><span class="chip">Flutter</span><span class="chip">Cubit</span><span class="chip">Gamification</span></div>
+        <a class="more" href="https://github.com/ahmadsab1" target="_blank"><span class="en">View on GitHub →</span><span class="ar">← عرض على GitHub</span></a>
+      </div>
+      <div class="card">
+        <div class="thumb t2">😂</div>
+        <h3><span class="en">AI Jokes App</span><span class="ar">تطبيق النكت بالذكاء الاصطناعي</span></h3>
+        <p><span class="en">An app that generates fresh jokes on demand using the OpenAI API.</span><span class="ar">تطبيق يولّد نكت جديدة عند الطلب باستخدام OpenAI API.</span></p>
+        <div class="chips"><span class="chip">Flutter</span><span class="chip">OpenAI API</span><span class="chip">REST</span></div>
+        <a class="more" href="https://github.com/ahmadsab1" target="_blank"><span class="en">View on GitHub →</span><span class="ar">← عرض على GitHub</span></a>
+      </div>
+      <div class="card">
+        <div class="thumb t3">🛍️</div>
+        <h3><span class="en">E-commerce Store UI</span><span class="ar">واجهات متجر إلكتروني</span></h3>
+        <p><span class="en">A multi-screen shopping app interface: home, product details, cart and checkout.</span><span class="ar">واجهات تطبيق تسوق متعددة الشاشات: الرئيسية، تفاصيل المنتج، السلة، والدفع.</span></p>
+        <div class="chips"><span class="chip">Flutter</span><span class="chip">UI/UX</span><span class="chip">Responsive</span></div>
+        <a class="more" href="https://github.com/ahmadsab1" target="_blank"><span class="en">View on GitHub →</span><span class="ar">← عرض على GitHub</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" data-stage>
+  <div class="wrap">
+    <div class="sec-head">
+      <small><span class="en">How I work</span><span class="ar">طريقة عملي</span></small>
+      <h2><span class="en">Simple, clear process</span><span class="ar">خطوات واضحة وبسيطة</span></h2>
+    </div>
+    <div class="grid steps">
+      <div class="card step">
+        <h3><span class="en">Understand</span><span class="ar">الفهم</span></h3>
+        <p><span class="en">We talk about your idea, goals and timeline.</span><span class="ar">نتحدث عن فكرتك وأهدافك والمدة المطلوبة.</span></p>
+      </div>
+      <div class="card step">
+        <h3><span class="en">Build in milestones</span><span class="ar">التنفيذ على مراحل</span></h3>
+        <p><span class="en">You get a test build after each stage, so you see progress early.</span><span class="ar">تستلم نسخة للتجربة بعد كل مرحلة لترى التقدم أولاً بأول.</span></p>
+      </div>
+      <div class="card step">
+        <h3><span class="en">Deliver</span><span class="ar">التسليم</span></h3>
+        <p><span class="en">Full source code, on time, with support after delivery.</span><span class="ar">الكود المصدري كاملاً في الموعد، مع دعم بعد التسليم.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="contact" data-stage>
+  <div class="wrap">
+    <div class="sec-head">
+      <small><span class="en">Let's talk</span><span class="ar">لنتحدث</span></small>
+      <h2><span class="en">Have a project in mind?</span><span class="ar">عندك فكرة مشروع؟</span></h2>
+    </div>
+    <p class="lead c-anim"><span class="en">Send me a message with your idea, and I'll reply with a clear plan and timeline.</span><span class="ar">أرسل لي فكرتك، وسأرد عليك بخطة واضحة ومدة تنفيذ.</span></p>
+    <div class="btns c-anim">
+      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ahmadsab305@gmail.com&su=New%20project" target="_blank" rel="noopener" class="btn primary" id="emailBtn"><span class="en">Email me</span><span class="ar">راسلني بالإيميل</span></a>
+      <a href="https://wa.me/201028545412" target="_blank" rel="noopener" class="btn ghost">WhatsApp</a>
+      <a href="https://github.com/ahmadsab1" target="_blank" rel="noopener" class="btn ghost">GitHub</a>
+    </div>
+    <p class="email-line c-anim">
+      <span class="en">Or email me directly:</span><span class="ar">أو راسلني مباشرة:</span>
+      <button type="button" class="copy" id="copyEmail" title="Copy">ahmadsab305@gmail.com <span class="copy-ic">⧉</span></button>
+    </p>
+  </div>
+</section>
+<div class="toast" id="toast"><span class="en">Email copied ✓</span><span class="ar">تم نسخ الإيميل ✓</span></div>
+</main>
+
+<footer>
+  <div class="wrap">© <span id="yr"></span> Ahmad Sabbah · ahmadsabbah.com</div>
+</footer>
+
+<!-- UI: language, cursor glow, progress bar, card tilt, scroll animations -->
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Language
+  const btn = document.getElementById('langBtn');
+  function setLang(ar){
+    document.body.classList.toggle('ar', ar);
+    document.documentElement.lang = ar ? 'ar' : 'en';
+    document.documentElement.dir = ar ? 'rtl' : 'ltr';
+    btn.textContent = ar ? 'English' : 'العربية';
+    try{ localStorage.setItem('lang', ar ? 'ar' : 'en'); }catch(e){}
+    window.dispatchEvent(new Event('langchange'));
+    if (window.ScrollTrigger) ScrollTrigger.refresh();
+  }
+  btn.addEventListener('click', () => setLang(!document.body.classList.contains('ar')));
+  let saved = null;
+  try{ saved = localStorage.getItem('lang'); }catch(e){}
+  setLang(saved ? saved === 'ar' : (navigator.language || '').startsWith('ar'));
+
+  // Copy email to clipboard (works even if the visitor has no mail app)
+  const EMAIL = 'ahmadsab305@gmail.com';
+  const toast = document.getElementById('toast');
+  async function copyEmail(){
+    try { await navigator.clipboard.writeText(EMAIL); }
+    catch(e){
+      const ta = document.createElement('textarea'); ta.value = EMAIL; document.body.appendChild(ta);
+      ta.select(); try{ document.execCommand('copy'); }catch(_){} ta.remove();
+    }
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  document.getElementById('copyEmail').addEventListener('click', copyEmail);
+  // On phones, open the mail app instead of Gmail web
+  if (matchMedia('(hover:none)').matches) {
+    document.getElementById('emailBtn').href = 'mailto:' + EMAIL + '?subject=New%20project';
+    document.getElementById('emailBtn').removeAttribute('target');
+  }
+
+  // Cursor glow
+  const glow = document.getElementById('glow');
+  addEventListener('pointermove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; });
+
+  // Scroll progress bar
+  const bar = document.getElementById('progress');
+  addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.width = (max > 0 ? scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3D tilt on cards (mouse devices only)
+  function enableTilt(el){
+    if (!matchMedia('(hover:hover)').matches) return;
+    el.addEventListener('mousemove', e => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      el.style.transform = `perspective(900px) rotateX(${(0.5 - y) * 12}deg) rotateY(${(x - 0.5) * 12}deg) translateY(-6px)`;
+      el.style.setProperty('--gx', (x * 100) + '%');
+      el.style.setProperty('--gy', (y * 100) + '%');
+    });
+    el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+  }
+
+  // Scroll animations (GSAP)
+  if (window.gsap && window.ScrollTrigger && !reduceMotion) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero intro
+    gsap.from('.h-anim', { y: 60, rotationX: -45, opacity: 0, transformOrigin: '50% 100%', duration: 1.1, stagger: 0.12, ease: 'power3.out', delay: 0.2 });
+
+    // Section titles flip up in 3D
+    gsap.utils.toArray('.sec-head').forEach(head => {
+      gsap.from(head.children, {
+        rotationX: -90, y: 40, opacity: 0, transformOrigin: '50% 100%', duration: 1, stagger: 0.12, ease: 'power3.out',
+        scrollTrigger: { trigger: head, start: 'top 85%' }
+      });
+    });
+
+    // Cards fly in with 3D rotation
+    gsap.utils.toArray('.grid').forEach(grid => {
+      gsap.from(grid.children, {
+        rotationY: -40, rotationX: 15, z: -300, y: 80, opacity: 0, duration: 1.1, stagger: 0.15, ease: 'power3.out',
+        scrollTrigger: { trigger: grid, start: 'top 85%' },
+        onComplete(){ gsap.set(grid.children, { clearProps: 'transform' }); grid.querySelectorAll('.card').forEach(enableTilt); }
+      });
+    });
+
+    // Contact
+    gsap.from('.c-anim', { y: 40, opacity: 0, duration: 1, stagger: 0.15, ease: 'power3.out', scrollTrigger: { trigger: '#contact', start: 'top 70%' } });
+
+    // Skills band: twists with scroll
+    gsap.fromTo('.band', { rotateX: 35, rotateZ: -6 }, { rotateX: -20, rotateZ: 3, ease: 'none',
+      scrollTrigger: { trigger: '.band-wrap', start: 'top bottom', end: 'bottom top', scrub: true } });
+  } else {
+    document.querySelectorAll('.card').forEach(enableTilt);
+  }
+</script>
+
+<!-- 3D scene (Three.js): the phone travels through the page as you scroll -->
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const host = document.getElementById('scene');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+host.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+camera.position.set(0, 0, 11);
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+const key = new THREE.DirectionalLight(0xffffff, 1.8); key.position.set(4, 6, 7); scene.add(key);
+const blue = new THREE.PointLight(0x4f8cff, 70, 30); blue.position.set(-5, 2, 4); scene.add(blue);
+const green = new THREE.PointLight(0x22d3a6, 50, 30); green.position.set(5, -3, 3); scene.add(green);
+
+// ---------- Phone rig ----------
+const rig = new THREE.Group();      // moved by scroll
+const phone = new THREE.Group();    // reacts to mouse / idle float
+rig.add(phone); scene.add(rig);
+
+const body = new THREE.Mesh(
+  new RoundedBoxGeometry(2.3, 4.6, 0.26, 8, 0.32),
+  new THREE.MeshStandardMaterial({ color: 0x1a1f2e, metalness: 0.85, roughness: 0.28 })
+);
+phone.add(body);
+
+const makeCanvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d')]; };
+const rr = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+
+// Front screen: app UI
+const [sc, g] = makeCanvas(512, 1024);
+rr(g, 0, 0, 512, 1024, 60); g.save(); g.clip();
+const bg = g.createLinearGradient(0, 0, 0, 1024); bg.addColorStop(0, '#0f1b3d'); bg.addColorStop(1, '#0b2a2a');
+g.fillStyle = bg; g.fillRect(0, 0, 512, 1024);
+g.fillStyle = '#000'; rr(g, 196, 22, 120, 30, 15); g.fill();
+g.fillStyle = '#fff'; g.font = 'bold 46px Inter, sans-serif'; g.fillText('Level Up', 40, 140);
+g.fillStyle = '#9aa3b5'; g.font = '24px Inter, sans-serif'; g.fillText('Level 7 · 1,240 XP', 40, 182);
+g.fillStyle = '#232a3d'; rr(g, 40, 210, 432, 18, 9); g.fill();
+const xp = g.createLinearGradient(40, 0, 400, 0); xp.addColorStop(0, '#4f8cff'); xp.addColorStop(1, '#22d3a6');
+g.fillStyle = xp; rr(g, 40, 210, 300, 18, 9); g.fill();
+[['Morning workout', true], ['Study DSA', true], ['Read 20 pages', false], ['Ship new feature', false]].forEach(([t, done], i) => {
+  const y = 270 + i * 130;
+  g.fillStyle = 'rgba(255,255,255,0.06)'; rr(g, 40, y, 432, 105, 22); g.fill();
+  g.fillStyle = done ? '#22d3a6' : 'rgba(255,255,255,0.15)'; rr(g, 70, y + 32, 40, 40, 12); g.fill();
+  if (done) { g.strokeStyle = '#0b2a2a'; g.lineWidth = 6; g.beginPath(); g.moveTo(80, y + 52); g.lineTo(88, y + 61); g.lineTo(101, y + 43); g.stroke(); }
+  g.fillStyle = '#e9ecf2'; g.font = '600 28px Inter, sans-serif'; g.fillText(t, 132, y + 62);
+  g.fillStyle = '#4f8cff'; g.font = '600 22px Inter, sans-serif'; g.fillText('+50 XP', 380, y + 62);
+});
+g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(0, 900, 512, 124);
+['#4f8cff', '#9aa3b5', '#9aa3b5', '#9aa3b5'].forEach((col, i) => { g.fillStyle = col; g.beginPath(); g.arc(88 + i * 112, 960, 14, 0, Math.PI * 2); g.fill(); });
+g.restore();
+const frontTex = new THREE.CanvasTexture(sc); frontTex.colorSpace = THREE.SRGBColorSpace; frontTex.anisotropy = 8;
+const screen = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 4.2), new THREE.MeshBasicMaterial({ map: frontTex, transparent: true }));
+screen.position.z = 0.135; phone.add(screen);
+
+// Back: logo + camera module
+const [bc, b] = makeCanvas(512, 1024);
+b.clearRect(0, 0, 512, 1024);
+const lg = b.createLinearGradient(150, 420, 360, 600); lg.addColorStop(0, '#4f8cff'); lg.addColorStop(1, '#22d3a6');
+b.fillStyle = lg; b.font = 'bold 170px Inter, sans-serif'; b.textAlign = 'center'; b.fillText('A.', 256, 580);
+b.fillStyle = 'rgba(255,255,255,0.35)'; b.font = '600 30px Inter, sans-serif'; b.fillText('AHMAD SABBAH', 256, 660);
+const backTex = new THREE.CanvasTexture(bc); backTex.colorSpace = THREE.SRGBColorSpace;
+const back = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 4.2), new THREE.MeshBasicMaterial({ map: backTex, transparent: true }));
+back.position.z = -0.135; back.rotation.y = Math.PI; phone.add(back);
+const camBlock = new THREE.Mesh(new RoundedBoxGeometry(0.85, 0.85, 0.08, 4, 0.18), new THREE.MeshStandardMaterial({ color: 0x252b3d, metalness: 0.9, roughness: 0.2 }));
+camBlock.position.set(0.55, 1.6, -0.16); phone.add(camBlock);
+const lensMat = new THREE.MeshStandardMaterial({ color: 0x05070c, metalness: 1, roughness: 0.05 });
+[[0.38, 1.78], [0.72, 1.78], [0.38, 1.44]].forEach(([x, y]) => {
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.06, 32), lensMat);
+  lens.rotation.x = Math.PI / 2; lens.position.set(x, y, -0.21); phone.add(lens);
+});
+
+// Orbit rings around the phone
+const ringMat = (col, op) => new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: op });
+const ring1 = new THREE.Mesh(new THREE.TorusGeometry(3.1, 0.012, 8, 160), ringMat(0x4f8cff, 0.55));
+ring1.rotation.set(1.25, 0.2, 0);
+const ring2 = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.008, 8, 160), ringMat(0x22d3a6, 0.4));
+ring2.rotation.set(1.1, -0.5, 0.3);
+rig.add(ring1, ring2);
+
+// ---------- Floating shapes (parallax at different depths) ----------
+const shapes = [];
+const addShape = (geo, color, pos, depth) => {
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.25, emissive: color, emissiveIntensity: 0.18 }));
+  m.position.set(...pos);
+  m.userData = { base: new THREE.Vector3(...pos), speed: 0.5 + Math.random() * 0.6, phase: Math.random() * 6, depth };
+  scene.add(m); shapes.push(m);
+};
+addShape(new THREE.IcosahedronGeometry(0.42, 0), 0x4f8cff, [-4.2, 2.2, -1], 1.2);
+addShape(new THREE.TorusGeometry(0.33, 0.12, 16, 40), 0x22d3a6, [4.4, 2.6, -2], 0.8);
+addShape(new THREE.OctahedronGeometry(0.34, 0), 0xa78bfa, [4.0, -2.4, 0], 1.5);
+addShape(new THREE.SphereGeometry(0.22, 32, 32), 0xf472b6, [-3.8, -2.6, 0.5], 1.8);
+addShape(new THREE.BoxGeometry(0.4, 0.4, 0.4), 0xfbbf24, [-5.2, -0.3, -2.5], 0.6);
+addShape(new THREE.TorusKnotGeometry(0.28, 0.09, 80, 12), 0x4f8cff, [5.4, 0.2, -3], 0.5);
+addShape(new THREE.DodecahedronGeometry(0.3, 0), 0x22d3a6, [-1.5, -4.5, -1], 1.3);
+addShape(new THREE.ConeGeometry(0.28, 0.5, 6), 0xf472b6, [1.8, 4.6, -2], 1.0);
+
+// Deep star field
+const N = 900, pts = new Float32Array(N * 3);
+for (let i = 0; i < N; i++) {
+  pts[i * 3] = (Math.random() - 0.5) * 30;
+  pts[i * 3 + 1] = (Math.random() - 0.5) * 60;
+  pts[i * 3 + 2] = -4 - Math.random() * 16;
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+const stars = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x8fb3ff, size: 0.04, transparent: true, opacity: 0.75 }));
+scene.add(stars);
+
+// ---------- Scroll choreography ----------
+// One pose per section: x, y, z, rotX, rotY, rotZ, scale
+const DESKTOP = [
+  [ 2.6,  0.0,  0.0,  0.05, -0.35,  0.00, 1.00],   // hero: front, right side
+  [-3.0,  0.0, -0.5, -0.10,  0.75,  0.10, 0.85],   // services: turns, slides left
+  [ 3.0,  0.2, -0.5,  0.10, -2.70, -0.10, 0.85],   // work: spins to show the back
+  [ 0.0,  0.0, -4.0, -1.10,  0.00,  0.60, 0.80],   // process: lies back, far away
+  [ 0.0,  0.1,  0.5,  0.00,  6.28,  0.00, 0.95],   // contact: full spin, center
+];
+const MOBILE = [
+  [ 0.0,  1.9,  0.0,  0.05, -0.30,  0.00, 0.62],
+  [ 0.0,  0.0, -5.0, -0.10,  0.75,  0.10, 0.70],
+  [ 0.0,  0.0, -5.0,  0.10, -2.70, -0.10, 0.70],
+  [ 0.0,  0.0, -6.0, -1.10,  0.00,  0.60, 0.70],
+  [ 0.0,  2.2, -2.0,  0.00,  6.28,  0.00, 0.60],
+];
+const stages = [...document.querySelectorAll('[data-stage]')];
+let anchors = [];
+const measure = () => {
+  anchors = stages.map((el, i) => i === 0 ? 0 : el.offsetTop + el.offsetHeight / 2 - innerHeight / 2);
+};
+const smooth = t => t * t * (3 - 2 * t);
+const pose = new Array(7).fill(0);
+const target = new Array(7).fill(0);
+const computeTarget = () => {
+  const P = innerWidth < 900 ? MOBILE : DESKTOP;
+  const y = scrollY;
+  let i = 0;
+  while (i < anchors.length - 1 && y >= anchors[i + 1]) i++;
+  const a = anchors[i], bnd = anchors[Math.min(i + 1, anchors.length - 1)];
+  const t = bnd > a ? smooth(Math.min(Math.max((y - a) / (bnd - a), 0), 1)) : 0;
+  const A = P[i], B = P[Math.min(i + 1, P.length - 1)];
+  const dir = document.documentElement.dir === 'rtl' ? -1 : 1;
+  for (let k = 0; k < 7; k++) {
+    let v = A[k] + (B[k] - A[k]) * t;
+    if (k === 0 || k === 4) v *= dir;          // mirror x & rotY for Arabic layout
+    target[k] = v;
+  }
+};
+
+// ---------- Sizing ----------
+const resize = () => {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  measure();
+};
+resize();
+addEventListener('resize', resize);
+addEventListener('load', measure);
+addEventListener('langchange', () => setTimeout(measure, 50));
+new ResizeObserver(measure).observe(document.body);
+
+// ---------- Mouse ----------
+let mx = 0, my = 0;
+addEventListener('pointermove', e => { mx = (e.clientX / innerWidth) * 2 - 1; my = (e.clientY / innerHeight) * 2 - 1; });
+
+// ---------- Loop ----------
+const clock = new THREE.Clock();
+const speed = reduce ? 0.25 : 1;
+let firstFrame = true;
+const loop = () => {
+  requestAnimationFrame(loop);
+  const t = clock.getElapsedTime() * speed;
+
+  computeTarget();
+  const ease = firstFrame ? 1 : (reduce ? 0.2 : 0.07);
+  firstFrame = false;
+  for (let k = 0; k < 7; k++) pose[k] += (target[k] - pose[k]) * ease;
+
+  rig.position.set(pose[0], pose[1], pose[2]);
+  rig.rotation.set(pose[3], pose[4], pose[5]);
+  rig.scale.setScalar(pose[6]);
+
+  // idle float + mouse follow on the phone itself
+  phone.rotation.y += ((Math.sin(t * 0.5) * 0.2 + mx * 0.35) - phone.rotation.y) * 0.06;
+  phone.rotation.x += ((my * 0.18) - phone.rotation.x) * 0.06;
+  phone.position.y = Math.sin(t * 0.9) * 0.12;
+
+  ring1.rotation.z = t * 0.25;
+  ring2.rotation.z = -t * 0.18;
+
+  // shapes drift with scroll at different depths (parallax)
+  const sy = scrollY * 0.004;
+  shapes.forEach(s => {
+    const u = s.userData;
+    s.rotation.x += 0.01 * speed; s.rotation.y += 0.013 * speed;
+    s.position.x = u.base.x + mx * 0.3 * u.depth;
+    s.position.y = u.base.y + Math.sin(t * u.speed + u.phase) * 0.25 + sy * u.depth;
+    if (s.position.y > 8) u.base.y -= 16;      // wrap around so shapes keep coming
+    if (s.position.y < -8) u.base.y += 16;
+  });
+
+  stars.position.y = scrollY * 0.0025;
+  stars.rotation.y = t * 0.02;
+  camera.position.x += (mx * 0.4 - camera.position.x) * 0.04;
+  camera.position.y += (-my * 0.25 - camera.position.y) * 0.04;
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+};
+loop();
+</script>
+</body>
+</html>
